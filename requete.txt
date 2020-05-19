@@ -1,0 +1,80 @@
+ 1.select NUMERO_MEDECIN,NOM_MEDECIN from medecin where specialite="S1" ;
+ 2.SELECT DISTINCT SPECIALITE_MEDECIN from medecin;
+**************************************************
+ 3_ select NUMERO_MALADE,NOM_MALADE,DATE_DE_NAISSANCE_MALADE  from malade where SEXE_MALADE="m" ORDER BY DATE_DE_NAISSANCE_MALADE DESC;
+*******************************************************
+4- select NUMERO_MALADE,NOM_MALADE,DATE_DE_NAISSANCE_MALADE  from malade where SEXE_MALADE="f" AND  ADRESSE_MALADE like'%P%' ORDER BY NOM_MALADE ASC;
+*******************************************************
+5- SELECT NUMERO_MALADE,NOM_MALADE,DATE_DE_NAISSANCE_MALADE ,NUMERO_CHAMBRE,CATEGORIE_CHAMBRE,TYPE_CHAMBRE, FROM malade , Chambre,interne WHERE malade.NUMERO_MALADE=interne.NUMERO_MALADE AND interne.NUMERO_DEPARTEMENT=Chambre.NUMERO_DEPARTEMENT;
+*********************************************************
+6-Select malade.NUMERO_MALADE, malade.NOM_MALADE, malade.DATE_DE_NAISSANCE_MALADE, chambre.NUMERO_CHAMBRE, chambre.CATEGORIE_CHAMBRE from malade,  chambre,  occuper,  lit where malade.NUMERO_MALADE =occuper.NUMERO_MALADE and occuper.NUMERO_LIT=Lit.NUMERO_LIT and lit.NUMERO_CHAMBRE = chambre.NUMERO_CHAMBRE;
+*************************************************
+7-Select malade.NUMERO_MALADE, malade.NOM_MALADE, malade.DATE_DE_NAISSANCE_MALADE from malade ,suivre where suivre.NUMERO_MALADE =malade.NUMERO_MALADE AND suivre.NUMERO_MEDECIN="M3";
+******************************************************
+8-Select malade.NUMERO_MALADE, malade.NOM_MALADE, malade.DATE_DE_NAISSANCE_MALADE from malade ,suivre,occuper where suivre.NUMERO_MALADE =malade.NUMERO_MALADE AND suivre.NUMERO_MEDECIN="M3" AND occuper.NUMERO_MALADE=malade.NUMERO_MALADE AND occuper.NUMERO_LIT=21;
+*********************************************
+9.Select malade.NUMERO_MALADE, malade.NOM_MALADE, malade.DATE_DE_NAISSANCE_MALADE from malade ,suivre,occuper where occuper.NUMERO_MALADE=malade.NUMERO_MALADE AND occuper.NUMERO_LIT=11;
+***********************
+10-SELECT m.NUMERO_MALADE,m.NOM_MALADE, m.DATE_DE_NAISSANCE_MALADE,FeuilleEvolution, DateFeuilleEvol
+FROM Malade m , FeuilleEvolution F
+WHERE m.NUMERO_MALADE=11 AND F.NUMERO_MALADE=11;
+**********************************
+11-SELECT NUMERO_DEPARTEMENT,count(*) as NUMERO_MALADE FROM interne Group BY NUMERO_DEPARTEMENT;
+*******************
+12-SELECT m.NUMERO_MALADE,m.NOM_MALADE,m.ADRESSE_MALADE,me.NOM_MEDECIN FROM malade as m,medecin as me,suivre as s,departementmedical as d WHERE s.NUMERO_MEDECIN=me.NUMERO_MEDECIN AND s.NUMERO_MALADE=m.NUMERO_MALADE AND me.NUMERO_DEPARTEMENT=d.NUMERO_DEPARTEMENT AND d.NOM_DEPARTEMENT="D2";
+************************************************
+13-SELECT ma.NUMERO_MALADE,ma.NOM_MALADE,ma.ADRESSE_MALADE FROM malade as ma,feuilledevolution as f WHERE ma.NUMERO_MALADE=f.NUMERO_MALADE AND MONTH (f.DATE_FEUILLE)=2 OR MONTH (f.DATE_FEUILLE) =12;
+************************************************
+14-SELECT Chambre.* FROM Chambre
+WHERE NUMERO_CHAMBRE =
+(SELECT NUMERO_CHAMBRE FROM Lit 
+ INNER JOIN 
+ (SELECT NUMERO_LIT,Count(*) as Maxi 
+  FROM occuper 
+  GROUP BY NUMERO_LIT 
+  ORDER BY Maxi 
+  DESC LIMIT 1)AS NewTable 
+ ON Lit.NUMERO_LIT=NewTable.NUMERO_LIT
+);
+*********************************************
+15-SELECT departementmedical.* FROM departementmedical INNER JOIN ((SELECT NUMERO_DEPARTEMENT, Count(*) as Maxi FROM interne GROUP BY NUMERO_DEPARTEMENT ORDER BY Maxi DESC LIMIT 1) as New) ON departementmedical.NUMERO_DEPARTEMENT=New.NUMERO_DEPARTEMENT;
+******************************************************
+16.SELECT Chambre.* FROM Chambre
+WHERE NUMERO_CHAMBRE =
+(SELECT NUMERO_CHAMBRE FROM Lit 
+ INNER JOIN 
+ (SELECT NUMERO_LIT, Count(*) as Maxi 
+  FROM occuper 
+  GROUP BY NUMERO_LIT 
+  ORDER BY Maxi 
+  DESC LIMIT 1)AS NewTable 
+ ON Lit.NUMERO_LIT=NewTable.NUMERO_LIT
+);
+**********************************************
+17-SELECT medecin.* FROM medecin
+INNER JOIN 
+(SELECT NUMERO_MEDECIN, count(*) as Maxi FROM suivre 
+ GROUP BY NUMERO_MEDECIN 
+ ORDER BY Maxi DESC 
+ LIMIT 1) AS NewTable 
+ON NewTable.NUMERO_MEDECIN=medecin.NUMERO_MEDECIN ;
+****************************************************
+18-SELECT ma.NUMERO_MALADE ,ma.NOM_MALADE, ma.DATE_DE_NAISSANCE_MALADE,c.NUMERO_CHAMBRE,l.NUMERO_LIT FROM malade AS ma,chambre AS c,lit AS l, medecin AS m,suivre AS s WHERE m.SPECIALITE_MEDECIN="s1" AND s.NUMERO_MEDECIN= m.NUMERO_MEDECIN AND s.NUMERO_MALADE= ma.NUMERO_MALADE;
+************************************************
+19-SELECT * FROM feuilledevolution 
+WHERE feuilledevolution.NUMERO_MALADE= (
+    SELECT malade.NUMERO_MALADE FROM malade, departementmedical, interne 
+    WHERE malade.NUMERO_MALADE=interne.NUMERO_MALADE=feuilledevolution.NUMERO_MALADE 
+    AND  interne.NUMERO_DEPARTEMENT = departementmedical.NUMERO_DEPARTEMENT= feuilledevolution.NUMERO_DEPARTEMENT  
+    AND departementmedical.NOM_DEPARTEMENT= 'd2' 
+    AND feuilledevolution.DATE_FEUILLE LIKE '2020-04%' LIMIT 1);
+***************************************************
+20-SELECT NUMERO_LIT FROM lit 
+WHERE NUMERO_LIT 
+NOT IN (
+    SELECT DISTINCT occuper.NUMERO_LIT 
+    FROM occuper, malade, feuilledevolution
+    WHERE malade.NUMERO_MALADE=occuper.NUMERO_MALADE=feuilledevolution.NUMERO_MALADE 
+    AND feuilledevolution.DATE_FEUILLE LIKE '%-03-%');
+
+
